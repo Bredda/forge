@@ -13,7 +13,7 @@ services:
       # SSL configuration
       - --certificatesresolvers.leresolver.acme.httpchallenge=true
       - --certificatesresolvers.leresolver.acme.email=bredda.testing@gmail.com
-      - --certificatesresolvers.leresolver.acme.storage=./support/acme.json
+      - --certificatesresolvers.leresolver.acme.storage=./acme.json
       - --certificatesresolvers.leresolver.acme.httpchallenge.entrypoint=web
       # Enable dashboard
       - --api.dashboard=true

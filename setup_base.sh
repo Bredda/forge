@@ -5,9 +5,16 @@
 ########################################################
 echo "Starting Traefik + Portainer"
 
-chmod 600 ./compose/support/acme.json
+chmod 600 ./compose/acme.json
 
-docker network create traefik-public
+output="$(docker network ls | grep forge-public)"
+
+if [[ -n $output ]]
+then
+    printf "Docker network forge-public already exists"
+else
+    docker network create forge-public
+fi
 
 docker-compose  -f ./compose/docker-compose.root.yml up -d
 
