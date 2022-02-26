@@ -9,6 +9,6 @@ chmod 600 ./compose/support/acme.json
 
 docker network create traefik-public
 
-docker-compose up -d
+docker-compose  -f ./compose/docker-compose.root.yml up -d
 
 echo "Infra started with success"
