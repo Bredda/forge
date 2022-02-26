@@ -9,14 +9,21 @@ services:
       - 50000:50000
     container_name: jenkins
     volumes:
-      - ~/jenkins:/var/jenkins_home
+      - jenkins_data:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
       - /usr/local/bin/docker:/usr/local/bin/docker
     labels:
-      # Jenkins
+      # Traefik config
       - "traefik.enable=true"
       - "traefik.http.routers.jenkins.rule=Host(`jenkins.forge.bredda.fr`)"
       - "traefik.http.routers.jenkins.entrypoints=websecure"
       - "traefik.http.services.jenkins.loadbalancer.server.port=9000"
       - "traefik.http.routers.jenkins.service=jenkins"
       - "traefik.http.routers.jenkins.tls.certresolver=leresolver"
+    networks:
+      - traefik-public
+volumes:
+  jenkins_data:
+networks:
+  traefik-public:
+    external: true

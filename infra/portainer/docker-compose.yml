@@ -1,4 +1,4 @@
-version: "3.3"
+version: "3.7"
 
 services:
   traefik:
@@ -13,6 +13,7 @@ services:
       - --certificatesresolvers.leresolver.acme.email=bredda.testing@gmail.com
       - --certificatesresolvers.leresolver.acme.storage=./acme.json
       - --certificatesresolvers.leresolver.acme.httpchallenge.entrypoint=web
+      - --api.dashboard=true
     ports:
       - "80:80"
       - "443:443"
@@ -20,33 +21,41 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "./acme.json:/acme.json"
     labels:
+      # Global config
       - "traefik.http.routers.http-catchall.rule=hostregexp(`{host:.+}`)"
       - "traefik.http.routers.http-catchall.entrypoints=web"
       - "traefik.http.routers.http-catchall.middlewares=redirect-to-https"
       - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
-
+      #Reverse proxying dahsboard through Traefik
+      - "traefik.enable=true"
+      - "traefik.http.services.traefik.loadbalancer.server.port=888" # required by swarm but not used.
+      - "traefik.http.routers.traefik.rule=Host(`traefik.forge.bredda.fr`)"
+      - "traefik.http.routers.traefik.entrypoints=websecure"
+      - "traefik.http.routers.traefik.tls.certresolver=leresolver"
+      - "traefik.http.routers.traefik.service=api@internal"
+    networks:
+      - traefik-public
   portainer:
     image: portainer/portainer-ce:2.11.1
+    container_name: portainer
     command: -H unix:///var/run/docker.sock
     restart: always
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - portainer_data:/data
     labels:
-      # Frontend
+      # Traefik config
       - "traefik.enable=true"
       - "traefik.http.routers.frontend.rule=Host(`portainer.forge.bredda.fr`)"
       - "traefik.http.routers.frontend.entrypoints=websecure"
       - "traefik.http.services.frontend.loadbalancer.server.port=9000"
       - "traefik.http.routers.frontend.service=frontend"
       - "traefik.http.routers.frontend.tls.certresolver=leresolver"
-
-      # Edge
-      - "traefik.http.routers.edge.rule=Host(`edge.forge.bredda.fr`)"
-      - "traefik.http.routers.edge.entrypoints=websecure"
-      - "traefik.http.services.edge.loadbalancer.server.port=8000"
-      - "traefik.http.routers.edge.service=edge"
-      - "traefik.http.routers.edge.tls.certresolver=leresolver"
+    networks:
+      - traefik-public
 
 volumes:
   portainer_data:
+networks:
+  traefik-public:
+    external: true
