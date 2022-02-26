@@ -1,0 +1,22 @@
+version: "3.7"
+services:
+  jenkins:
+    image: jenkins/jenkins:lts
+    privileged: true
+    user: root
+    ports:
+      - 8081:8080
+      - 50000:50000
+    container_name: jenkins
+    volumes:
+      - ~/jenkins:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/local/bin/docker:/usr/local/bin/docker
+    labels:
+      # Jenkins
+      - "traefik.enable=true"
+      - "traefik.http.routers.jenkins.rule=Host(`jenkins.forge.bredda.fr`)"
+      - "traefik.http.routers.jenkins.entrypoints=websecure"
+      - "traefik.http.services.jenkins.loadbalancer.server.port=9000"
+      - "traefik.http.routers.jenkins.service=jenkins"
+      - "traefik.http.routers.jenkins.tls.certresolver=leresolver"

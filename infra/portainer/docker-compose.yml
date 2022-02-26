@@ -35,14 +35,14 @@ services:
     labels:
       # Frontend
       - "traefik.enable=true"
-      - "traefik.http.routers.frontend.rule=Host(`portainer.bredda.fr`)"
+      - "traefik.http.routers.frontend.rule=Host(`portainer.forge.bredda.fr`)"
       - "traefik.http.routers.frontend.entrypoints=websecure"
       - "traefik.http.services.frontend.loadbalancer.server.port=9000"
       - "traefik.http.routers.frontend.service=frontend"
       - "traefik.http.routers.frontend.tls.certresolver=leresolver"
 
       # Edge
-      - "traefik.http.routers.edge.rule=Host(`edge.bredda.fr`)"
+      - "traefik.http.routers.edge.rule=Host(`edge.forge.bredda.fr`)"
       - "traefik.http.routers.edge.entrypoints=websecure"
       - "traefik.http.services.edge.loadbalancer.server.port=8000"
       - "traefik.http.routers.edge.service=edge"
