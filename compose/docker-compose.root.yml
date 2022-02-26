@@ -5,14 +5,17 @@ services:
     container_name: traefik
     image: "traefik:latest"
     command:
+      # Configure entrypoints. 80 = http, 443 = https
       - --entrypoints.web.address=:80
       - --entrypoints.websecure.address=:443
       - --providers.docker
       - --log.level=ERROR
+      # SSL configuration
       - --certificatesresolvers.leresolver.acme.httpchallenge=true
       - --certificatesresolvers.leresolver.acme.email=bredda.testing@gmail.com
-      - --certificatesresolvers.leresolver.acme.storage=./acme.json
+      - --certificatesresolvers.leresolver.acme.storage=./support/acme.json
       - --certificatesresolvers.leresolver.acme.httpchallenge.entrypoint=web
+      # Enable dashboard
       - --api.dashboard=true
     ports:
       - "80:80"
@@ -26,13 +29,16 @@ services:
       - "traefik.http.routers.http-catchall.entrypoints=web"
       - "traefik.http.routers.http-catchall.middlewares=redirect-to-https"
       - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
-      #Reverse proxying dahsboard through Traefik
+      # Reverse proxying dahsboard through Traefik
       - "traefik.enable=true"
-      - "traefik.http.services.traefik.loadbalancer.server.port=888" # required by swarm but not used.
+      - "traefik.http.services.traefik.loadbalancer.server.port=888"
       - "traefik.http.routers.traefik.rule=Host(`traefik.forge.bredda.fr`)"
       - "traefik.http.routers.traefik.entrypoints=websecure"
       - "traefik.http.routers.traefik.tls.certresolver=leresolver"
       - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.routers.traefik.middlewares=traefik-auth"
+      - "traefik.http.middlewares.traefik-auth.basicauth.users=bredda:$$apr1$$9AOoQbsH$$vl5t4rHm36gIYQYUdiYvM/"
+
     networks:
       - traefik-public
   portainer:
@@ -46,11 +52,11 @@ services:
     labels:
       # Traefik config
       - "traefik.enable=true"
-      - "traefik.http.routers.frontend.rule=Host(`portainer.forge.bredda.fr`)"
-      - "traefik.http.routers.frontend.entrypoints=websecure"
-      - "traefik.http.services.frontend.loadbalancer.server.port=9000"
-      - "traefik.http.routers.frontend.service=frontend"
-      - "traefik.http.routers.frontend.tls.certresolver=leresolver"
+      - "traefik.http.routers.portainer.rule=Host(`portainer.forge.bredda.fr`)"
+      - "traefik.http.routers.portainer.entrypoints=websecure"
+      - "traefik.http.services.portainer.loadbalancer.server.port=9000"
+      - "traefik.http.routers.portainer.service=portainer"
+      - "traefik.http.routers.portainer.tls.certresolver=leresolver"
     networks:
       - traefik-public
 
