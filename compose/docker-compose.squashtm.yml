@@ -1,0 +1,47 @@
+version: "3.7"
+services:
+  squash-db:
+    container_name: squash-db
+    environment:
+      POSTGRES_DB: ${SQUASHTM_DB_DATABASE}
+      POSTGRES_PASSWORD: ${SQUASHTM_DB_PASSWORD}
+      POSTGRES_USER: ${SQUASHTM_DB_USER}
+    image: postgres:9.6.12
+    volumes:
+      - squash-tm-data:/var/lib/postgresql/data
+    networks:
+      - traefik-public
+
+  squash-tm:
+    depends_on:
+      - squash-db
+    environment:
+      SQTM_DB_TYPE: postgresql
+      SQTM_DB_USERNAME: ${SQUASHTM_DB_USER}
+      SQTM_DB_PASSWORD: ${SQUASHTM_DB_PASSWORD}
+      SQTM_DB_NAME: ${SQUASHTM_DB_DATABASE}
+    ports:
+      - 8090:8080/tcp
+    image: squashtest/squash-tm
+    links:
+      - squash-db:postgres
+    volumes:
+      - squash-tm-logs:/opt/squash-tm/logs
+      - squash-tm-plugins:/opt/squash-tm/plugins
+    labels:
+      # Traefik config
+      - "traefik.enable=true"
+      - "traefik.http.routers.squash.rule=Host(`squash.forge.bredda.fr`)"
+      - "traefik.http.routers.squash.entrypoints=websecure"
+      - "traefik.http.services.squash.loadbalancer.server.port=8080"
+      - "traefik.http.routers.squash.service=squash"
+      - "traefik.http.routers.squash.tls.certresolver=leresolver"
+    networks:
+      - traefik-public
+volumes:
+  squash-tm-logs:
+  squash-tm-plugins:
+  squash-tm-data:
+networks:
+  traefik-public:
+    external: true

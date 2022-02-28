@@ -17,7 +17,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.jenkins.rule=Host(`jenkins.forge.bredda.fr`)"
       - "traefik.http.routers.jenkins.entrypoints=websecure"
-      - "traefik.http.services.jenkins.loadbalancer.server.port=8081"
+      - "traefik.http.services.jenkins.loadbalancer.server.port=8080"
       - "traefik.http.routers.jenkins.service=jenkins"
       - "traefik.http.routers.jenkins.tls.certresolver=leresolver"
     networks:
